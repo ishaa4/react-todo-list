@@ -2,12 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './styles.css';
+import './index.css';
 import TodoList from './todolist';
-import reducer from './reducers';
-import { configureStore } from '@reduxjs/toolkit';
-
-const store = configureStore({ reducer });
+import store from './store';
 
 ReactDOM.render(
   <Provider store={store}>

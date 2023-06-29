@@ -1,44 +1,51 @@
 import React, { useState } from 'react';
-import { Button, Form, ListGroup } from 'react-bootstrap';
+import { Form, Button, ListGroup } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { addTask, deleteTask, updateTask } from './actions';
 
-const TodoList = ({ tasks, addTask, deleteTask, updateTask }) => {
+const TodoList = ({ tasksByDate, addTask, deleteTask, updateTask }) => {
   const [newTask, setNewTask] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (newTask.trim() !== '') {
-      addTask(newTask);
-      setNewTask('');
-    }
+    if (newTask.trim() === '') return;
+    addTask(newTask, selectedDate);
+    setNewTask('');
   };
 
-  const handleDelete = (taskId) => {
-    deleteTask(taskId);
+  const handleDateChange = (e) => {
+    setSelectedDate(e.target.value);
   };
 
-  const handleUpdate = (taskId, updatedTask) => {
-    updateTask(taskId, updatedTask);
-  };
+  const tasks = tasksByDate[selectedDate] || [];
 
   return (
     <div className="container">
       <h1 className="todo-heading">Todo List</h1>
       <Form onSubmit={handleSubmit}>
-        <Form.Group controlId="formTask">
+        <Form.Group controlId="taskForm">
           <Form.Control
             type="text"
-            placeholder="Enter task"
+            placeholder="Enter a new task"
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
-            className="form-input"
+          />
+        </Form.Group>
+        <Form.Group controlId="dateForm">
+          <Form.Control
+            type="date"
+            value={selectedDate}
+            onChange={handleDateChange}
           />
         </Form.Group>
         <Button variant="primary" type="submit">
           Add Task
         </Button>
       </Form>
+      <h2 className="selected-date-heading">
+        Tasks for {selectedDate ? selectedDate : 'All Dates'}
+      </h2>
       <ListGroup>
         {tasks.map((task) => (
           <ListGroup.Item key={task.id} className="task-item">
@@ -47,16 +54,14 @@ const TodoList = ({ tasks, addTask, deleteTask, updateTask }) => {
               <Button
                 variant="danger"
                 size="sm"
-                onClick={() => handleDelete(task.id)}
+                onClick={() => deleteTask(task.id)}
               >
                 Delete
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() =>
-                  handleUpdate(task.id, prompt('Update task', task.task))
-                }
+                onClick={() => updateTask(task.id, 'Updated Task')}
               >
                 Update
               </Button>
@@ -68,14 +73,12 @@ const TodoList = ({ tasks, addTask, deleteTask, updateTask }) => {
   );
 };
 
-const mapStateToProps = (state) => ({
-  tasks: state.tasks,
-});
-
-const mapDispatchToProps = {
-  addTask,
-  deleteTask,
-  updateTask,
+const mapStateToProps = (state) => {
+  return {
+    tasksByDate: state.tasksByDate,
+  };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(TodoList);
+export default connect(mapStateToProps, { addTask, deleteTask, updateTask })(
+  TodoList
+);
